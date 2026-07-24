@@ -33,7 +33,8 @@ alter table customers modify column salary decimal(5,2);
 #DML
 insert into customers(customer_id,first_name,last_name,phone,email,salary,creation_date) values
 (1,'Saurabh','Patil',1234567890,'saurabh@email.com',454.90,'2026-06-03'),
-(2,'Vrushabh','Dakwe',9012345678,'vrushabh@email.com',433.40,'2026-03-04'),
+(2,'Vrushabh','Dakwe',9012345678,'vrushabh@email.com',433.40,'2026-03-04');
+insert into customers(customer_id,first_name,last_name,phone,email,salary,creation_date) values
 (3,'Deepak','Kadam',9012345675,'deepak@email.com',433.40,'2026-03-04'),
 (4,'Aryan','Kashyap',9476345678,'aryan@email.com',433.40,'2026-03-04'),
 (5,'Muaviz','Khan',9012316258,'muaviz@email.com',433.40,'2026-03-04');
@@ -69,9 +70,31 @@ select account_type,balance from accounts where customer_id=1;
 select account_id,balance from accounts where account_type='savings';
 select email,salary from customers where phone=1234567890;
 
+#order by
 select account_id,balance from accounts where balance>25000;
 select max(balance) from accounts;
 select balance from accounts order by balance;
 select balance from accounts order by balance desc ;
 select balance from accounts order by balance desc limit 1;
 select balance from accounts order by balance desc limit 1 offset 1;
+
+#group by
+select max(balance),account_type from accounts group by account_type;
+select account_type from accounts group by account_type;
+select distinct account_type from accounts;
+
+#where clause
+select * from customers;
+select first_name from customers where first_name like 'v%';
+select first_name,email from customers where first_name like '%z';
+select first_name,email from customers where first_name like '%sha%';
+select last_name,email,phone from customers where last_name like '__k%'; #letter k at third position in last name
+select last_name,email,phone from customers where last_name like '_a%'; #letter a at second position in last name
+
+#logical operators
+select customer_id,first_name from customers where salary > 370;
+select customer_id,first_name from customers where salary > 350 and creation_date>'2026-03-04';
+select customer_id,first_name from customers where salary > 350 or creation_date>'2026-03-04';
+select account_type,account_id from accounts where account_type !='savings'and balance>1000;
+
+select account_id,balance,customer_id from accounts where account_type in ('savings','current');
