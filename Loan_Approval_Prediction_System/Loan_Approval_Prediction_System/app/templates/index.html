@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loan Approval Prediction System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="mark">L&amp;Co</div>
+    <div class="titles">
+      <h1>Ledger &amp; Co. Loan Office</h1>
+      <p class="subtitle">Automated Underwriting Desk &mdash; Loan Approval Prediction System</p>
+    </div>
+    <div class="ref-number" id="refNumber">FILE No. &mdash;</div>
+  </div>
+</header>
+
+<main class="desk">
+
+  <section class="ledger-card">
+    <div class="ledger-card-head">
+      <span class="eyebrow">Applicant Particulars</span>
+      <h2>Loan Application Form</h2>
+      <p class="hint">Enter the applicant's financial details below. Every field is required for the underwriting model to render a decision.</p>
+    </div>
+
+    <form id="loanForm" novalidate>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="applicant_income">Applicant Income <span class="unit">₹ / month</span></label>
+          <input type="number" id="applicant_income" name="applicant_income" min="0" step="1" placeholder="e.g. 65000" required>
+          <span class="error" data-for="applicant_income"></span>
+        </div>
+        <div class="field">
+          <label for="coapplicant_income">Coapplicant Income <span class="unit">₹ / month</span></label>
+          <input type="number" id="coapplicant_income" name="coapplicant_income" min="0" step="1" placeholder="0 if none" required>
+          <span class="error" data-for="coapplicant_income"></span>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="loan_amount">Loan Amount Requested <span class="unit">₹</span></label>
+          <input type="number" id="loan_amount" name="loan_amount" min="0" step="1" placeholder="e.g. 1200000" required>
+          <span class="error" data-for="loan_amount"></span>
+        </div>
+        <div class="field">
+          <label for="loan_term">Loan Term <span class="unit">months</span></label>
+          <select id="loan_term" name="loan_term" required>
+            <option value="" disabled selected>Select term</option>
+            {% for term in loan_terms %}
+            <option value="{{ term }}">{{ term }} months</option>
+            {% endfor %}
+          </select>
+          <span class="error" data-for="loan_term"></span>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="credit_score">Credit Score <span class="unit">300&ndash;850</span></label>
+          <input type="number" id="credit_score" name="credit_score" min="300" max="850" step="1" placeholder="e.g. 720" required>
+          <span class="error" data-for="credit_score"></span>
+        </div>
+        <div class="field">
+          <label for="employment_years">Employment Years <span class="unit">0&ndash;35</span></label>
+          <input type="number" id="employment_years" name="employment_years" min="0" max="35" step="1" placeholder="e.g. 6" required>
+          <span class="error" data-for="employment_years"></span>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="debt_to_income_ratio">Debt-to-Income Ratio <span class="unit">0&ndash;1</span></label>
+          <input type="number" id="debt_to_income_ratio" name="debt_to_income_ratio" min="0" max="1" step="0.01" placeholder="e.g. 0.32" required>
+          <span class="error" data-for="debt_to_income_ratio"></span>
+        </div>
+        <div class="field">
+          <label for="property_area">Property Area</label>
+          <select id="property_area" name="property_area" required>
+            <option value="" disabled selected>Select area</option>
+            {% for area in property_areas %}
+            <option value="{{ area }}">{{ area }}</option>
+            {% endfor %}
+          </select>
+          <span class="error" data-for="property_area"></span>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn" id="submitBtn">
+        <span class="btn-label">Predict Loan Approval</span>
+        <span class="btn-loading" hidden>Reviewing file&hellip;</span>
+      </button>
+
+      <p class="form-error" id="formError" hidden></p>
+    </form>
+  </section>
+
+  <aside class="verdict-panel">
+    <div class="verdict-head">
+      <span class="eyebrow">Underwriting Decision</span>
+      <h2>Loan Prediction</h2>
+    </div>
+
+    <div class="stamp-stage" id="stampStage">
+      <div class="stamp-placeholder" id="stampPlaceholder">
+        <div class="placeholder-ring"></div>
+        <p>Submit the form to receive a decision</p>
+      </div>
+
+      <div class="stamp" id="stamp" hidden>
+        <div class="stamp-ring">
+          <span class="stamp-text" id="stampText">APPROVED</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="probability-block" id="probabilityBlock" hidden>
+      <div class="prob-row">
+        <span class="prob-label">Approval Probability</span>
+        <span class="prob-value" id="approvalProb">0.00%</span>
+      </div>
+      <div class="prob-bar"><div class="prob-bar-fill approve" id="approvalBar"></div></div>
+
+      <div class="prob-row">
+        <span class="prob-label">Rejection Probability</span>
+        <span class="prob-value" id="rejectionProb">0.00%</span>
+      </div>
+      <div class="prob-bar"><div class="prob-bar-fill reject" id="rejectionBar"></div></div>
+    </div>
+
+    <p class="disclaimer">Generated by a synthetic-data classification model for demonstration purposes. Not a real lending decision.</p>
+  </aside>
+
+</main>
+
+<footer class="foot-note">
+  <p>Ledger &amp; Co. &middot; Loan Approval Prediction System &middot; Machine Learning Demonstration Project</p>
+</footer>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
